@@ -1,0 +1,35 @@
+		viejoTramaAmbitosDTOList = StreamUtils.filterWithLogs(
+				viejoTramaAmbitosDTOList.parallelStream(),
+				viejoTramaAmbitosDTO -> !viejoTramaAmbitosDTO.getNombre().toLowerCase().startsWith("baja")
+        )
+        .logWhen(
+        		viejoTramaAmbitosDTO -> viejoTramaAmbitosDTO.getNombre().toLowerCase().startsWith("baja"),
+        		"ámbito con id: {} y nombre:'{}' excluido por empezar por la palabra 'baja'",
+        		field(ViejoTramaAmbitosDTO::getIdCodigoViejotrama),
+        		field(ViejoTramaAmbitosDTO::getNombre)
+        )
+        .build(log)
+        .collect(Collectors.toList());
+
+		viejoTramaCalenEdificioDTOList = StreamUtils.filterWithLogs(
+				viejoTramaCalenEdificioDTOList.parallelStream(),
+				viejoTramaCalenEdificioDTO -> !idsAmbitosNoMigrados.contains(String.valueOf(viejoTramaCalenEdificioDTO.getIdAmbito()))
+                        && !String.valueOf(viejoTramaCalenEdificioDTO.getIdAmbito()).equals(idCodigoAmbitoNoExistente)
+        )
+        .logWhen(
+                viejoTramaCalenEdificioDTO -> idsAmbitosNoMigrados.contains(String.valueOf(viejoTramaCalenEdificioDTO.getIdAmbito())),
+                "calendario festivo con id: {} y nombre '{}' excluido por estar vinculado al ambito con id: {} que no fue migrado",
+                field(ViejoTramaCalenEdificioDTO::getIdCodigoViejotrama),
+        		field(ViejoTramaCalenEdificioDTO::getNombre),
+        		field(ViejoTramaCalenEdificioDTO::getIdAmbito)
+
+        )
+        .logWhen(
+                viejoTramaCalenEdificioDTO -> String.valueOf(viejoTramaCalenEdificioDTO.getIdAmbito()).equals(idCodigoAmbitoNoExistente),
+                "calendario festivo con id: {} y nombre: '{}' excluido por estar vinculado al ambito con id: {} que no existe",
+		        field(ViejoTramaCalenEdificioDTO::getIdCodigoViejotrama),
+		        field(ViejoTramaCalenEdificioDTO::getNombre),
+		        field(ViejoTramaCalenEdificioDTO::getIdAmbito)
+        )
+        .build(log)
+        .collect(Collectors.toList());        
